@@ -18,7 +18,10 @@ const (
 	insertQueryNews     = "^INSERT INTO \"news\".+$"
 	updateQueryNews      = `^UPDATE "news".*WHERE "id" = .*$`
 	getQueryNews         = "^SELECT (.+) FROM \"news\".+$"
-	deleteQueryNews = `^UPDATE "news".*WHERE "id" = .*$`
+	deleteQueryNews = `^UPDATE "news".*WHERE "news"."id" = .*$`
+	insertQueryTag = "^INSERT INTO \"tags\".+$"
+	getQueryTag         = "^SELECT (.+) FROM \"tags\".+$"
+	insertQueryTagNews = "^INSERT INTO \"news_tag\".+$"
 )
 
 func getMockNews() models.News {
@@ -44,7 +47,7 @@ func getMockListParamsNews() map[string]string {
 	params := map[string]string {
 		"topic": "bitcoin",
 		"status": "draft",
-		"tag": "cryptocurrency"
+		"tag": "1",
 	}
 	return params
 }
@@ -52,12 +55,13 @@ func getMockListParamsNews() map[string]string {
 func TestNewsCreateSuccess(t *testing.T) {
 	testMock, assertion := setUpNews(t)
 	testMock.ExpectQuery(insertQueryNews).WillReturnRows(sqlmock.NewRows([]string{"1", "1"})).WillReturnError(nil)
+	testMock.ExpectQuery(insertQueryTag).WillReturnRows(sqlmock.NewRows([]string{"1", "1"})).WillReturnError(nil)
+	testMock.ExpectExec(insertQueryTagNews).WithArgs(sqlmock.AnyArg(),sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
 	mockNews := getMockNews()
 	newsRepo := new(NewsRepository)
 	response, err := newsRepo.Create(mockNews)
 	assertion.Nil(err, "Should be no error")
 	assertion.NotNil(response, "Response should be not nil")
-	testMock.ExpectationsWereMet()
 }
 
 func TestNewsCreateFailed(t *testing.T) {
@@ -65,9 +69,8 @@ func TestNewsCreateFailed(t *testing.T) {
 	testMock.ExpectQuery(insertQueryNews).WillReturnRows(sqlmock.NewRows([]string{"0", "1"})).WillReturnError(errors.New("Insertion error"))
 	mockNews := getMockNews()
 	newsRepo := new(NewsRepository)
-	response, err := newsRepo.Create(mockNews)
-	assertion.Nil(err, "Should be no error")
-	assertion.NotNil(response, "Response should be not nil")
+	_, err := newsRepo.Create(mockNews)
+	assertion.NotNil(err, "Should be an error")
 	testMock.ExpectationsWereMet()
 }
 
@@ -78,7 +81,7 @@ func TestNewsUpdateSuccess(t *testing.T) {
 	testMock.ExpectQuery(getQueryNews).WillReturnRows(returnRow)
 	testMock.ExpectExec(updateQueryNews).WithArgs(
 		sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),
-		sqlmock.AnyArg(),sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
+		sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
 	newsRepo := new(NewsRepository)
 	_, err := newsRepo.Update(uint(1), mockUpdateData)
 	assertion.Nil(err, "Should be no error")
@@ -92,7 +95,7 @@ func TestNewsUpdateIDNotFoundReturnError(t *testing.T) {
 	testMock.ExpectQuery(getQueryNews).WillReturnRows(returnRow).WillReturnError(fmt.Errorf("record not found"))
 	testMock.ExpectExec(updateQueryNews).WithArgs(
 		sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),
-		sqlmock.AnyArg(),sqlmock.AnyArg()).WillReturnError(fmt.Errorf("update error"))
+		sqlmock.AnyArg()).WillReturnError(fmt.Errorf("update error"))
 	newsRepo := new(NewsRepository)
 	_, err := newsRepo.Update(uint(1), mockUpdateData)
 	assertion.NotNil(err, "Should be an error")
@@ -120,7 +123,7 @@ func TestNewsDeleteSuccess(t *testing.T) {
 	testMock.ExpectQuery(getQueryNews).WillReturnRows(returnRow)
 	testMock.ExpectExec(deleteQueryNews).WithArgs(sqlmock.AnyArg(),sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
 	newsRepo := new(NewsRepository)
-	_, err := newsRepo.Delete(uint(1))
+	err := newsRepo.Delete(uint(1))
 	assertion.Nil(err, "Should be no error")
 	testMock.ExpectationsWereMet()
 }
@@ -129,9 +132,8 @@ func TestNewsDeleteIDNotFoundReturnError(t *testing.T) {
 	testMock, assertion := setUpNews(t)
 	returnRow := mockRowNews()
 	testMock.ExpectQuery(getQueryNews).WillReturnRows(returnRow).WillReturnError(fmt.Errorf("record not found"))
-	testMock.ExpectExec(deleteQueryNews).WithArgs(sqlmock.AnyArg(),sqlmock.AnyArg()).WillReturnError(fmt.Errorf("update error"))
 	newsRepo := new(NewsRepository)
-	_, err := newsRepo.Delete(uint(1))
+	err := newsRepo.Delete(uint(1))
 	assertion.NotNil(err, "Should be an error")
 	testMock.ExpectationsWereMet()
 }
@@ -141,9 +143,9 @@ func TestNewsDeleteFailureReturnError(t *testing.T) {
 	testMock, assertion := setUpNews(t)
 	returnRow := mockRowNews()
 	testMock.ExpectQuery(getQueryNews).WillReturnRows(returnRow)
-	testMock.ExpectExec(deleteQueryNews).WithArgs(sqlmock.AnyArg(),sqlmock.AnyArg()).WillReturnError(fmt.Errorf("update error"))
+	testMock.ExpectExec(deleteQueryNews).WithArgs(sqlmock.AnyArg(),sqlmock.AnyArg()).WillReturnError(fmt.Errorf("delete error"))
 	newsRepo := new(NewsRepository)
-	_, err := newsRepo.Delete(uint(1))
+	err := newsRepo.Delete(uint(1))
 	assertion.NotNil(err, "Should be an error")
 	testMock.ExpectationsWereMet()
 }
@@ -161,7 +163,7 @@ func TestNewsGetByIDSuccess(t *testing.T) {
 
 func TestNewsGetByIDFailed(t *testing.T) {
 	testMock, assertion := setUpNews(t)
-	_ := mockRowNews()
+	_ = mockRowNews()
 	testMock.ExpectQuery(getQueryNews).WillReturnError(fmt.Errorf("record not found"))
 	newsRepo := new(NewsRepository)
 	_, err := newsRepo.GetByID(uint(1))
@@ -180,15 +182,28 @@ func TestNewsListSuccess (t *testing.T) {
 	assertion.Nil(err, "Should be no error")
 }
 
+func TestNewsListTagNotIntReturnError (t *testing.T) {
+	testMock, assertion := setUpNews(t)
+	returnRows := mockRowsNews()
+	testMock.ExpectQuery(getQueryNews).WillReturnRows(returnRows)
+	newsRepo := new(NewsRepository)
+	searchParams := getMockListParamsNews()
+	searchParams["tag"] = "asdadadasdadadasdasd"
+	_, err := newsRepo.List(searchParams)
+	assertion.NotNil(err, "Should be no error")
+}
+
 func TestNewsListFailureReturnError (t *testing.T) {
 	testMock, assertion := setUpNews(t)
-	_ := mockRowsNews()
+	_ = mockRowsNews()
 	testMock.ExpectQuery(getQueryNews).WillReturnError(fmt.Errorf("rows not found"))
 	newsRepo := new(NewsRepository)
 	searchParams := getMockListParamsNews()
 	_, err := newsRepo.List(searchParams)
 	assertion.NotNil(err, "There should be an error")
 }
+
+
 
 func setUpNews(t *testing.T) (sqlmock.Sqlmock, *assert.Assertions) {
 	mock := setUpMockNewsDB()
@@ -219,5 +234,12 @@ func mockRowNews() *sqlmock.Rows {
 	newsFieldColumns := []string{"id","title","thumbnail","summary","content", "topic", "status"}
 	rows := sqlmock.NewRows(newsFieldColumns)
 	rows.AddRow("1", "Harga bitcoin anjlok", "google.com/thumbnail.png", "Harga bitcoin sempat menurun namun dogecoin justru naik", "Dikarenakan cuitan Elon Musk, nilai bitcoin sempat mengalami penurunan", "bitcoin", "draft")
+	return rows
+}
+
+func mockRowTag() *sqlmock.Rows {
+	tagFieldColumns := []string{"id","name"}
+	rows := sqlmock.NewRows(tagFieldColumns)
+	rows.AddRow("1", "cryptocurrency")
 	return rows
 }
