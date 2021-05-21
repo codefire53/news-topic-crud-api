@@ -1,7 +1,6 @@
 package services
 
 import (
-	"errors"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	mockRepositories "news-topic-api/mocks/repositories"
@@ -54,6 +53,7 @@ func getMockSearchParams() map[string]string {
 		"topic": "bitcoin",
 		"tag": "1",
 	}
+	return params
 }
 func TestCreateNewsSuccessReturnCreatedEntity(t *testing.T) {
 	mockedNewsRepository := new(mockRepositories.INewsRepository)
@@ -133,7 +133,7 @@ func TestListNewsSuccessReturnEntities(t *testing.T) {
 	mockNewsEntities := getMockNewsList()
 	expectedOutput := getExpectedNewsListOutput()
 	newsService := InitNewsService(mockedNewsRepository)
-	assert.Nil(t, err, "There should be no error")
+
 	searchParams := getMockSearchParams()
 	mockedNewsRepository.On("List",searchParams).Return(mockNewsEntities, nil)
 	response, err  := newsService.List(searchParams)
@@ -145,9 +145,8 @@ func TestListNewsSuccessReturnEntities(t *testing.T) {
 func TestListNewsFailedReturnError(t *testing.T) {
 	mockedNewsRepository := new(mockRepositories.INewsRepository)
 	newsService := InitNewsService(mockedNewsRepository)
-	assert.Nil(t, err, "There should be no error")
 	searchParams := getMockSearchParams()
-	mockedNewsRepository.On("List",searchParams).Return([]models.News, fmt.Errorf("Records not available"))
+	mockedNewsRepository.On("List",searchParams).Return([]models.News{}, fmt.Errorf("Records not available"))
 	_, err  := newsService.List(searchParams)
 	assert.NotNil(t, err, "There should be an error")
 }
