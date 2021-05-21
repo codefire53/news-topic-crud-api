@@ -20,7 +20,6 @@ const (
 	getQueryNews         = "^SELECT (.+) FROM \"news\".+$"
 	deleteQueryNews = `^UPDATE "news".*WHERE "news"."id" = .*$`
 	insertQueryTag = "^INSERT INTO \"tags\".+$"
-	getQueryTag         = "^SELECT (.+) FROM \"tags\".+$"
 	insertQueryTagNews = "^INSERT INTO \"news_tag\".+$"
 )
 
