@@ -15,4 +15,13 @@ type News struct {
 	Status string `gorm:"not null" json:"status"`
 }
 
+func (News) TableName() string {
+	return "news"
+}
+
+//NewsList ...
+type NewsList struct {
+	Data []News `json:"data"`
+}
+
 
