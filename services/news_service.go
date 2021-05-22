@@ -1,4 +1,3 @@
-
 package services
 
 import (
@@ -21,7 +20,7 @@ type NewsService struct {
 	newsRepository repositories.INewsRepository
 }
 
-//InitNewsService initialize a permohonan penyitaan service instance with specific news repository
+//InitNewsService initialize a news service instance with specific news repository
 func InitNewsService(newsRepository repositories.INewsRepository) INewsService {
 	newsService := new(NewsService)
 	newsService.newsRepository = newsRepository
