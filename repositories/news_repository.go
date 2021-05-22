@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"gorm.io/gorm"
 	"news-topic-api/infrastructures"
 	"news-topic-api/models"
 	"strconv"
@@ -109,4 +110,12 @@ func (n NewsRepository) List(queryParams map[string]string) ([]models.News, erro
 		db.Model(&newsList[i]).Association("Tags").Find(&newsList[i].Tags)
 	}
 	return newsList, nil
+}
+
+func updateAllID(news models.News) []models.Tag {
+	var tags []models.Tag
+	for _,value := range news.Tags {
+		tags = append(tags, models.Tag{Model: gorm.Model{ID: value.Model.ID}})
+	}
+	return tags
 }

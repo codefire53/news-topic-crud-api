@@ -30,7 +30,8 @@ func getMockNews() models.News {
 		Summary: "Harga bitcoin sempat menurun namun dogecoin justru naik",
 		Content: "Dikarenakan cuitan Elon Musk, nilai bitcoin sempat mengalami penurunan",
 		Tags: []models.Tag{
-			models.Tag{Name:"cryptocurrency"},
+			models.Tag{Model: gorm.Model{ID: 1}},
+
 		},
 		Topic: "bitcoin",
 		Status: "draft",
