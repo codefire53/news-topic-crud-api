@@ -92,9 +92,6 @@ func TestNewsUpdateIDNotFoundReturnError(t *testing.T) {
 	returnRow := mockRowNews()
 	mockUpdateData := getMockNews()
 	testMock.ExpectQuery(getQueryNews).WillReturnRows(returnRow).WillReturnError(fmt.Errorf("record not found"))
-	testMock.ExpectExec(updateQueryNews).WithArgs(
-		sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),sqlmock.AnyArg(),
-		sqlmock.AnyArg()).WillReturnError(fmt.Errorf("update error"))
 	newsRepo := new(NewsRepository)
 	_, err := newsRepo.Update(uint(1), mockUpdateData)
 	assertion.NotNil(err, "Should be an error")
@@ -233,12 +230,5 @@ func mockRowNews() *sqlmock.Rows {
 	newsFieldColumns := []string{"id","title","thumbnail","summary","content", "topic", "status"}
 	rows := sqlmock.NewRows(newsFieldColumns)
 	rows.AddRow("1", "Harga bitcoin anjlok", "google.com/thumbnail.png", "Harga bitcoin sempat menurun namun dogecoin justru naik", "Dikarenakan cuitan Elon Musk, nilai bitcoin sempat mengalami penurunan", "bitcoin", "draft")
-	return rows
-}
-
-func mockRowTag() *sqlmock.Rows {
-	tagFieldColumns := []string{"id","name"}
-	rows := sqlmock.NewRows(tagFieldColumns)
-	rows.AddRow("1", "cryptocurrency")
 	return rows
 }
