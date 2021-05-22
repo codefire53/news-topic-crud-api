@@ -16,7 +16,7 @@ import (
 	mockServices "news-topic-api/mocks/services"
 )
 
-//getBewsRouter is a function that prepares a router to test the http routing
+//getNewsRouter is a function that prepares a router to test the http routing
 func getNewsRouter(newsController NewsController, requestType string) *mux.Router {
 	router := mux.NewRouter()
 	var pathSuffix string
@@ -71,7 +71,7 @@ func createURLStandardRequestNews(method, url string) *http.Request {
 }
 func getMockReqTag() map[string]interface{} {
 	tagData := make(map[string]interface{})
-	tagData["Name"] = "cryptocurrency"
+	tagData["name"] = "cryptocurrency"
 	return tagData
 }
 func getMockReqNews() map[string]interface{} {
@@ -197,7 +197,7 @@ func TestUpdateNewsSuccessShouldReturnOk(t *testing.T) {
 	router.ServeHTTP(response, request)
 	assert.Equal(t, 200, response.Code, "response code should be 200")
 }
-/*
+
 func TestDeleteNewsFailedShouldReturnBadRequest(t *testing.T) {
 	mockedNewsService := new(mockServices.INewsService)
 	mockedNewsService.On("Delete", uint(1)).Return(errors.New("News failed to delete"))
@@ -208,7 +208,7 @@ func TestDeleteNewsFailedShouldReturnBadRequest(t *testing.T) {
 	router.ServeHTTP(response, request)
 	assert.Equal(t, 400, response.Code, "response code should be 400")
 }
-*/
+
 func TestDeleteNewsSuccessShouldReturnOk(t *testing.T) {
 	mockedNewsService := new(mockServices.INewsService)
 	mockedNewsService.On("Delete", uint(1)).Return(nil)
