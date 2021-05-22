@@ -18,7 +18,7 @@ const (
 	insertQueryTags     = "^INSERT INTO \"tags\".+$"
 	updateQueryTags      = `^UPDATE "tags".*WHERE "id" = .*$`
 	getQueryTags         = "^SELECT (.+) FROM \"tags\".+$"
-	deleteQueryTags = `^UPDATE "news".*WHERE "tags"."id" = .*$`
+	deleteQueryTags = `^UPDATE "tags".*WHERE "tags"."id" = .*$`
 
 )
 func getMockTag() models.Tag {
@@ -26,12 +26,6 @@ func getMockTag() models.Tag {
 		Name: "crypto",
 	}
 	return entity
-}
-
-func getMockTagList() models.TagsList {
-	tagsList := []models.Tag{getMockTag()}
-	entities := models.TagsList{Data: tagsList}
-	return entities
 }
 
 func TestTagCreateSuccess(t *testing.T) {
@@ -136,7 +130,7 @@ func TestTagListSuccess (t *testing.T) {
 
 func TestTagListFailureReturnError (t *testing.T) {
 	testMock, assertion := setUpTag(t)
-	_ = mockRowsTag()
+	_ = mockRowTag()
 	testMock.ExpectQuery(getQueryTags).WillReturnError(fmt.Errorf("rows not found"))
 	tagRepo := new(TagRepository)
 	_, err := tagRepo.List()
