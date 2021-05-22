@@ -89,11 +89,11 @@ func (n NewsRepository) List(queryParams map[string]string) ([]models.News, erro
 	topic := queryParams["topic"]
 	tag := queryParams["tag"]
 	if tag != "" {
-		tagId, err := strconv.Atoi(tag)
+		tagID, err := strconv.Atoi(tag)
 		if err != nil {
 			return []models.News{}, err
 		}
-		querySearch = querySearch.Joins("JOIN news_tag ON news_tag.news_id = news.id AND news.id = ?", uint(tagId))
+		querySearch = querySearch.Joins("JOIN news_tag ON news_tag.news_id = news.id AND news.id = ?", uint(tagID))
 	}
 	if topic != "" {
 		querySearch = querySearch.Where("topic = ?",topic)

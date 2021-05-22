@@ -15,6 +15,7 @@ type News struct {
 	Status string `gorm:"not null" json:"status"`
 }
 
+//TableName setup entities name on db
 func (News) TableName() string {
 	return "news"
 }
