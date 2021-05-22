@@ -9,17 +9,7 @@ import (
 	"testing"
 )
 
-func getMockTag() models.Tag {
-	entity := models.Tag {
-		Name: "cryptocurrency",
-	}
-	return entity
-}
 
-func getMockTags() []models.Tag {
-	entities := []models.Tag{getMockTag(), getMockTag()}
-	return entities
-}
 
 func getMockNews() models.News {
 	entity := models.News{
