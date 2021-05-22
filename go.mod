@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.1.2 //
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.7.3
-	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.10.0
 	github.com/magiconair/properties v1.8.5
 	github.com/stretchr/testify v1.7.0

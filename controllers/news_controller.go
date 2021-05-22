@@ -66,7 +66,19 @@ func (n *NewsController) Delete(res http.ResponseWriter, req *http.Request) {
 		helpers.ResponseError(res, http.StatusBadRequest, err)
 		return
 	}
-	resultData, err := n.newsService.Update(newsID, reqBody)
+	err = n.newsService.Delete(newsID)
+	if err != nil {
+		helpers.ResponseError(res, http.StatusBadRequest, err)
+		return
+	}
+	helpers.Response(res, http.StatusOK, nil)
+}
+
+//List controller that handles list news request
+func (n *NewsController) List(res http.ResponseWriter, req *http.Request) {
+	searchParams := n.parseParams(req)
+	var resultData models.NewsList
+	resultData, err := n.newsService.List(searchParams)
 	if err != nil {
 		helpers.ResponseError(res, http.StatusBadRequest, err)
 		return
@@ -74,51 +86,17 @@ func (n *NewsController) Delete(res http.ResponseWriter, req *http.Request) {
 	helpers.Response(res, http.StatusOK, resultData)
 }
 
-//List controller that handles list permohonan penyitaan request
-func (p *PermohonanPenyitaanController) List(res http.ResponseWriter, req *http.Request) {
-	role, pengajuID := p.getRoleAndUserIDFromHeader(req)
-	if !helpers.IsAdminPidana(role) && !helpers.IsPimpinanKajari(role) && !helpers.IsJaksa(role) {
-		helpers.ResponseBadRequest(res, http.StatusUnauthorized, constants.UnauthorizedRoleError())
-		return
-	}
-	page, limit, err := p.parsePageAndLimit(req)
-	if err != nil {
-		helpers.ResponseBadRequest(res, http.StatusBadRequest, err)
-		return
-	}
-	keyword := req.URL.Query().Get("keyword")
-	searchParams := map[string]string{"keyword": keyword}
-	var resultData models.DaftarPermohonanPenyitaan
-	if helpers.IsJaksa(role) {
-		searchParams["pengajuID"] = strconv.Itoa(pengajuID)
-	}
-	resultData, err = p.permohonanPenyitaanService.List(searchParams, page, limit)
-	if err != nil {
-		helpers.ResponseBadRequest(res, http.StatusBadRequest, err)
-		return
-	}
-	helpers.Response(res, http.StatusOK, resultData)
-}
 
-
-//GetDetail controller that handles get permohonan penyitaan by id request
-func(p *PermohonanPenyitaanController) GetDetail(res http.ResponseWriter, req *http.Request) {
-	role, pengajuID := p.getRoleAndUserIDFromHeader(req)
-	if !helpers.IsJaksa(role) && !helpers.IsPimpinanKajari(role) && !helpers.IsAdminPidana(role) {
-		helpers.ResponseBadRequest(res, http.StatusUnauthorized, constants.UnauthorizedRoleError())
+//GetDetail controller that handles get news by id request
+func(n *NewsController) GetDetail(res http.ResponseWriter, req *http.Request) {
+	newsID, err := n.parseID(req)
+	if err != nil {
+		helpers.ResponseError(res, http.StatusBadRequest, err)
 		return
 	}
-	if !helpers.IsJaksa(role) {
-		pengajuID = -1
-	}
-	penyitaanID, err := p.parseID(req)
+	resultData, err := n.newsService.GetDetail(newsID)
 	if err != nil {
-		helpers.ResponseBadRequest(res, http.StatusBadRequest, err)
-		return
-	}
-	resultData, err := p.permohonanPenyitaanService.GetDetail(penyitaanID, pengajuID)
-	if err != nil {
-		helpers.ResponseBadRequest(res, http.StatusBadRequest, err)
+		helpers.ResponseError(res, http.StatusBadRequest, err)
 		return
 	}
 	helpers.Response(res, http.StatusOK, resultData)
@@ -141,4 +119,19 @@ func (n *NewsController) parseID(req *http.Request) (uint, error) {
 	return uint(id), nil
 }
 
-
+func (n *NewsController) parseParams(req *http.Request) map[string]string {
+	topic := req.URL.Query().Get("topic")
+	tag := req.URL.Query().Get("tag")
+	status := req.URL.Query().Get("status")
+	searchParams := make(map[string]string)
+	if topic != "" {
+		searchParams["topic"] = topic
+	}
+	if tag != "" {
+		searchParams["tag"] = tag
+	}
+	if status != "" {
+		searchParams["status"] = status
+	}
+	return searchParams
+}
