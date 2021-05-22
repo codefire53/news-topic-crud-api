@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 	"news-topic-api/routes"
+	"news-topic-api/helpers"
 )
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 	originsOK := handlers.AllowedOrigins([]string{"*"})
 	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS", "DELETE", "PUT"})
 
-	port := "8080"
+	port := helpers.GetEnv("PORT", "8080")
 	fmt.Println("Server served at port " + port)
 
 	if err := http.ListenAndServe(":"+port, handlers.CORS(originsOK, headersOK, methodsOK)(r)); err != nil {
