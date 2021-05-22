@@ -176,6 +176,17 @@ func TestUpdateNewsInvalidRequestDataShouldReturnBadRequest(t *testing.T) {
 	assert.Equal(t, 400, response.Code, "response code should be 400")
 }
 
+func TestUpdateNewslnvalidIDOnURLShouldReturnBadRequest(t *testing.T) {
+	mockedRequestData := getMockReqNews()
+	mockedNewsService := new(mockServices.INewsService)
+	newsController := InitNewsController(mockedNewsService)
+	request := createJSONRequestNews("PUT", "/news/asdasdasdasdasdasdasd", mockedRequestData)
+	response := httptest.NewRecorder()
+	router := getNewsRouter(newsController, "Update")
+	router.ServeHTTP(response, request)
+	assert.Equal(t, 400, response.Code, "response code should be 400")
+}
+
 func TestUpdateNewsSuccessShouldReturnOk(t *testing.T) {
 	mockedRequestData := getMockReqNews()
 	mockedNewsService := new(mockServices.INewsService)
@@ -189,11 +200,10 @@ func TestUpdateNewsSuccessShouldReturnOk(t *testing.T) {
 }
 
 func TestDeleteNewsFailedShouldReturnBadRequest(t *testing.T) {
-	mockedRequestData := getMockReqNews()
 	mockedNewsService := new(mockServices.INewsService)
 	mockedNewsService.On("Delete", uint(1)).Return(errors.New("News failed to delete"))
 	newsController := InitNewsController(mockedNewsService)
-	request := createJSONRequestNews("DELETE", "/news/1", mockedRequestData)
+	request := createURLStandardRequestNews("DELETE", "/news/1")
 	response := httptest.NewRecorder()
 	router := getNewsRouter(newsController, "Delete")
 	router.ServeHTTP(response, request)
@@ -201,15 +211,24 @@ func TestDeleteNewsFailedShouldReturnBadRequest(t *testing.T) {
 }
 
 func TestDeleteNewsSuccessShouldReturnOk(t *testing.T) {
-	mockedRequestData := getMockReqNews()
 	mockedNewsService := new(mockServices.INewsService)
 	mockedNewsService.On("Delete", uint(1)).Return(nil)
 	newsController := InitNewsController(mockedNewsService)
-	request := createJSONRequestNews("DELETE", "/news/1", mockedRequestData)
+	request := createURLStandardRequestNews("DELETE", "/news/1")
 	response := httptest.NewRecorder()
 	router := getNewsRouter(newsController, "Delete")
 	router.ServeHTTP(response, request)
 	assert.Equal(t, 200, response.Code, "response code should be 200")
+}
+
+func TestDeleteNewslnvalidIDOnURLShouldReturnBadRequest(t *testing.T) {
+	mockedNewsService := new(mockServices.INewsService)
+	newsController := InitNewsController(mockedNewsService)
+	request := createURLStandardRequestNews("DELETE", "/news/asdasdasdasdasdasdasd")
+	response := httptest.NewRecorder()
+	router := getNewsRouter(newsController, "Delete")
+	router.ServeHTTP(response, request)
+	assert.Equal(t, 400, response.Code, "response code should be 400")
 }
 
 func TestListNewsSuccessShouldReturnOk(t *testing.T) {
