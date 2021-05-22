@@ -6,7 +6,7 @@ import (
 //Tag ...
 type Tag struct {
 	gorm.Model
-	Name string `gorm:"not null, unique" json:"name"`
+	Name string `gorm:"not null;unique;" json:"name"`
 }
 
 //TagsList ...
